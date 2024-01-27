@@ -23,3 +23,16 @@ class RedditStream:
         )
         logging.info("Reddit instance created successfully.")
         return reddit
+
+    def stream_submission(self):
+        subreddit = self.reddit_instance.subreddit(self.subreddit)
+
+        for submission in subreddit.stream.submissions():
+            submission_data = {
+                "id": submission.id,
+                "title": submission.title,
+                "upvotes": submission.ups,
+                "downvotes": submission.downs,
+                "created_at": submission.created_utc,
+            }
+            print(submission_data)
