@@ -25,6 +25,8 @@ schema = StructType(
 streaming_df = (
     spark.readStream.format("kafka")
     .option("kafka.bootstrap.servers", f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}")
+    .option("subscribe", "redditsubmission")
+    .option("startingOffsets", "earliest")
     .load()
 )
 
