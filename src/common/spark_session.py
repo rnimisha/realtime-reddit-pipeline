@@ -7,7 +7,14 @@ def create_spark_context():
     spark = None
 
     try:
-        spark = SparkSession.builder.appName("PysparkKafka").getOrCreate()
+        spark = (
+            SparkSession.builder.appName("PysparkKafka")
+            .config(
+                "spark.jars.packages",
+                "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0",
+            )
+            .getOrCreate()
+        )
         logging.info("Spark context created successfully")
 
     except Exception as e:
