@@ -37,14 +37,17 @@ class RedditStream:
 
         # for submission in subreddit.hot(limit=None):
         for submission in subreddit.stream.submissions():
+            print(vars(submission))
             submission_data = {
                 "id": submission.id,
                 "title": submission.title,
+                "body": submission.selftext,
                 "upvotes": submission.ups,
-                "downvotes": submission.downs,
+                "upvote_ratio": submission.upvote_ratio,
                 "created_at": submission.created_utc,
             }
             message = json.dumps(submission_data).encode("utf8")
+            print(message)
 
             try:
                 self.kafka_producer.produce(topic="redditsubmission", value=message)

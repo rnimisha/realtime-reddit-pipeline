@@ -1,6 +1,7 @@
-from pyspark.sql.functions import from_json
+from pyspark.sql.functions import from_json, from_unixtime
 from pyspark.sql.types import (
     DoubleType,
+    FloatType,
     IntegerType,
     StringType,
     StructField,
@@ -16,8 +17,9 @@ schema = StructType(
     [
         StructField("id", StringType(), True),
         StructField("title", StringType(), True),
+        StructField("body", StringType(), True),
         StructField("upvotes", IntegerType(), True),
-        StructField("downvotes", IntegerType(), True),
+        StructField("upvote_ratio", FloatType(), True),
         StructField("created_at", DoubleType(), True),
     ]
 )
@@ -36,3 +38,7 @@ json_df = streaming_df.selectExpr("cast(value as string) as value")
 json_expanded_df = json_df.withColumn(
     "value", from_json(json_df["value"], schema)
 ).select("value.*")
+
+json_expanded_df = json_expanded_df.withColumn(
+    "created_at", from_unixtime(json_expanded_df["created_at"])
+)
