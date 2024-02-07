@@ -10,9 +10,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     restart: unless-stopped
-    # volumes:
-    #   - ./zoo/data:/var/lib/zookeeper/data
-    #   - ./zoo/log:/var/lib/zookeeper/log
+    volumes:
+      - ./data/zookeeper-data:/var/lib/zookeeper/data
+      - ./log/zookeeper-logs:/var/lib/zookeeper/log
 
   broker:
     image: confluentinc/cp-server:7.5.0
@@ -35,8 +35,9 @@ services:
       CONFLUENT_METRICS_ENABLE: "true"
       CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
     restart: unless-stopped
-    # volumes:
-    #   - ./broker/data:/var/lib/kafka/data
+    volumes:
+      - ./data/kafka-data:/var/lib/kafka/data
+      - ./log/kafka-logs:/var/lib/kafka/log
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.5.0
@@ -55,3 +56,20 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
     restart: unless-stopped
+
+  spark:
+    image: docker.io/bitnami/spark:3
+    container_name: spark_master
+    hostname: spark_master
+    user: root
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./data/spark-data:/bitnami/spark
