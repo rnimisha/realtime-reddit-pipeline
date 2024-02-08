@@ -1,4 +1,4 @@
-from pyspark.sql.functions import col, concat, from_json, from_unixtime, udf
+from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     DoubleType,
     FloatType,
@@ -10,42 +10,50 @@ from pyspark.sql.types import (
 
 from src.common.spark_session import create_spark_context
 from src.config.settings import settings
+from src.consumer.kafka.kafka_stream_reader import KakfaStreamReader
 from src.consumer.preprocessing.clean_text import CleanText
+from src.consumer.preprocessing.preprocessor import Preprocessor
 
-spark = create_spark_context()
+
+class RedditConsumer:
+    def __init__(
+        self,
+        spark: SparkSession,
+        kafka_stream_reader: KakfaStreamReader,
+        preprocessor: Preprocessor,
+    ) -> None:
+        self.spark = spark
+        self.kafka_stream_reader = kafka_stream_reader
+        self.preprocessor = preprocessor
+        self.schema = self._define_schema()
+
+    def _define_schema(self) -> StructType:
+        return StructType(
+            [
+                StructField("id", StringType(), True),
+                StructField("title", StringType(), True),
+                StructField("body", StringType(), True),
+                StructField("upvotes", IntegerType(), True),
+                StructField("upvote_ratio", FloatType(), True),
+                StructField("created_at", DoubleType(), True),
+            ]
+        )
+
+    def process_stream(self):
+        df = self.kafka_stream_reader.get_kafka_data(self.schema)
+        processed_df = self.preprocessor.preprocess(df)
+        return processed_df
 
 
-schema = StructType(
-    [
-        StructField("id", StringType(), True),
-        StructField("title", StringType(), True),
-        StructField("body", StringType(), True),
-        StructField("upvotes", IntegerType(), True),
-        StructField("upvote_ratio", FloatType(), True),
-        StructField("created_at", DoubleType(), True),
-    ]
-)
+if __name__ == "__main__":
+    spark = create_spark_context()
+    kafka_stream_reader = KakfaStreamReader(
+        spark, settings.KAFKA_HOST, settings.KAFKA_PORT
+    )
+    clean_text = CleanText()
+    preprocessor = Preprocessor(clean_text)
+    consumer = RedditConsumer(spark, kafka_stream_reader, preprocessor)
+    cleaned_df = consumer.process_stream()
 
-streaming_df = (
-    spark.readStream.format("kafka")
-    .option("kafka.bootstrap.servers", f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}")
-    .option("subscribe", "redditsubmission")
-    .option("startingOffsets", "earliest")
-    .load()
-)
-
-# binary to string
-json_df = streaming_df.selectExpr("cast(value as string) as value")
-
-json_expanded_df = json_df.withColumn(
-    "value", from_json(json_df["value"], schema)
-).select("value.*")
-
-agg_df = json_expanded_df.withColumn(
-    "created_at", from_unixtime(json_expanded_df["created_at"])
-).withColumn("content", concat(col("title"), col("body")))
-
-clean_text = CleanText()
-clean_text_udf = udf(clean_text.clean_text, StringType())
-
-cleaned_df = agg_df.withColumn("cleaned_content", clean_text_udf(col("content")))
+    query = cleaned_df.writeStream.outputMode("append").format("console").start()
+    query.awaitTermination()
