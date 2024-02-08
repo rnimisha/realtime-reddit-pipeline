@@ -47,4 +47,5 @@ class Preprocessor:
         df = self._clean_text(df)
         df = self._generate_sentiment(df)
         df = self._generate_emotion(df)
+        df = df.drop("content")
         return df
