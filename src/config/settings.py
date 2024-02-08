@@ -7,6 +7,11 @@ class Settings(BaseSettings):
     CLIENT_ID: str
     KAFKA_HOST: str
     KAFKA_PORT: int
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_PORT: int
+    DB_HOST: str
+    DB_DATABASE: str
 
     class Config:
         env_file = ".env"
