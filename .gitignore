@@ -163,3 +163,7 @@ cython_debug/
 
 /data
 /log
+
+main.py
+server.py
+test.py
