@@ -1,4 +1,4 @@
-from pyspark.sql.functions import from_json, from_unixtime
+from pyspark.sql.functions import col, concat, from_json, from_unixtime, udf
 from pyspark.sql.types import (
     DoubleType,
     FloatType,
@@ -10,8 +10,10 @@ from pyspark.sql.types import (
 
 from src.common.spark_session import create_spark_context
 from src.config.settings import settings
+from src.consumer.preprocessing.clean_text import CleanText
 
 spark = create_spark_context()
+
 
 schema = StructType(
     [
@@ -39,6 +41,11 @@ json_expanded_df = json_df.withColumn(
     "value", from_json(json_df["value"], schema)
 ).select("value.*")
 
-json_expanded_df = json_expanded_df.withColumn(
+agg_df = json_expanded_df.withColumn(
     "created_at", from_unixtime(json_expanded_df["created_at"])
-)
+).withColumn("content", concat(col("title"), col("body")))
+
+clean_text = CleanText()
+clean_text_udf = udf(clean_text.clean_text, StringType())
+
+cleaned_df = agg_df.withColumn("cleaned_content", clean_text_udf(col("content")))
