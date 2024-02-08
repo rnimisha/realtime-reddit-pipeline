@@ -1,4 +1,4 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import (
     DoubleType,
     FloatType,
@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from src.common.sentiment_analysis import SentimentAnalyzer
 from src.common.spark_session import create_spark_context
 from src.config.settings import settings
 from src.consumer.kafka.kafka_stream_reader import KakfaStreamReader
@@ -16,6 +17,7 @@ from src.consumer.preprocessing.preprocessor import Preprocessor
 
 
 class RedditConsumer:
+
     def __init__(
         self,
         spark: SparkSession,
@@ -51,7 +53,8 @@ if __name__ == "__main__":
         spark, settings.KAFKA_HOST, settings.KAFKA_PORT
     )
     clean_text = CleanText()
-    preprocessor = Preprocessor(clean_text)
+    sentiment_analyzer = SentimentAnalyzer()
+    preprocessor = Preprocessor(clean_text, sentiment_analyzer)
     consumer = RedditConsumer(spark, kafka_stream_reader, preprocessor)
     cleaned_df = consumer.process_stream()
 
