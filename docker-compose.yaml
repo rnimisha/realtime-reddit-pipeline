@@ -74,22 +74,16 @@ services:
     volumes:
       - ./data/spark-data:/bitnami/spark
 
-  postgresdb:
-    image: postgres:16
-    restart: always
-    ports:
-      - "5436:5432"
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "27018:27017"
+    restart: unless-stopped
     volumes:
-      - reddit_data:/var/lib/postgresql/data
-    healthcheck:
-      test:
-        ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER} -d ${DB_DATABASE}"]
-      interval: 5s
-      retries: 10
+      - reddit_data:/data/db
 
 volumes:
   reddit_data:
