@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     DB_PORT: int
     DB_HOST: str
     DB_DATABASE: str
+    MONGO_ROOT_USERNAME: str
+    MONGO_ROOT_PASSWORD: str
 
     class Config:
         env_file = ".env"
