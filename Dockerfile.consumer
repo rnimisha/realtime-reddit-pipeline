@@ -1,0 +1,22 @@
+FROM python:3.11
+
+RUN apt-get update && apt-get install -y default-jre
+
+ENV PYTHONPATH "${PYTHONPATH}:/app"
+ENV NLTK_DATA /nltk_data/ ADD . $NLTK_DATA
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install -r requirements.txt
+RUN pip install pyspark
+
+# download punkt
+RUN python3 -m nltk.downloader punkt -d /usr/share/nltk_data
+# download stopwords
+RUN python3 -m nltk.downloader stopwords -d /usr/share/nltk_data
+
+EXPOSE 80
+
+CMD ["python3", "src/consumer/consumer.py"]
