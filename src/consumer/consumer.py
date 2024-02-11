@@ -49,9 +49,15 @@ class RedditConsumer:
 
 
 if __name__ == "__main__":
-    spark = create_spark_context()
+    spark = create_spark_context(
+        settings.DB_USER,
+        settings.DB_PASSWORD,
+        settings.DB_HOST,
+        settings.DB_PORT,
+        settings.DB_DATABASE,
+    )
     kafka_stream_reader = KakfaStreamReader(
-        spark, settings.KAFKA_HOST, settings.KAFKA_PORT
+        spark, settings.KAFKA_HOST, settings.KAFKA_PORT, settings.KAFKA_TOPIC
     )
     clean_text = CleanText()
     sentiment_analyzer = SentimentAnalyzer()
@@ -60,5 +66,10 @@ if __name__ == "__main__":
     consumer = RedditConsumer(spark, kafka_stream_reader, preprocessor)
     cleaned_df = consumer.process_stream()
 
-    query = cleaned_df.writeStream.outputMode("append").format("console").start()
-    query.awaitTermination()
+    mongodb_uri = f"mongodb://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}.redditstream"
+    cleaned_df.writeStream.outputMode("append").foreachBatch(
+        lambda batch_df, epoch_id: batch_df.write.format("mongo")
+        .mode("append")
+        .option("uri", mongodb_uri)
+        .save()
+    ).start().awaitTermination()

@@ -4,10 +4,13 @@ from pyspark.sql.types import StructType
 
 
 class KakfaStreamReader:
-    def __init__(self, spark: SparkSession, kafka_host: str, kafka_port: int) -> None:
+    def __init__(
+        self, spark: SparkSession, kafka_host: str, kafka_port: int, kafka_topic: str
+    ) -> None:
         self.spark = spark
         self.kafka_host = kafka_host
         self.kafka_port = kafka_port
+        self.kafka_topic = kafka_topic
 
     def _read_streaming_message(self) -> DataFrame:
         streaming_df = (
@@ -16,7 +19,7 @@ class KakfaStreamReader:
                 "kafka.bootstrap.servers",
                 f"{self.kafka_host}:{self.kafka_port}",
             )
-            .option("subscribe", "redditsubmission")
+            .option("subscribe", self.kafka_topic)
             .option("startingOffsets", "earliest")
             .load()
         )

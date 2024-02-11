@@ -5,8 +5,12 @@ class Settings(BaseSettings):
     CLIENT_SECRET: str
     USER_AGENT: str
     CLIENT_ID: str
+
     KAFKA_HOST: str
     KAFKA_PORT: int
+    KAFKA_TOPIC: str
+    SUBREDDIT: str
+
     DB_USER: str
     DB_PASSWORD: str
     DB_PORT: int

@@ -12,12 +12,14 @@ class RedditStream:
         client_secret: str,
         user_agent: str,
         subreddit: str,
+        kafka_topic: str,
         kafka_producer: Producer,
     ) -> None:
         self.subreddit = subreddit
         self.reddit_instance = self.__initialize_reddit(
             client_id, client_secret, user_agent
         )
+        self.kafka_topic = kafka_topic
         self.kafka_producer = kafka_producer
 
     def __initialize_reddit(
@@ -50,7 +52,7 @@ class RedditStream:
             print(message)
 
             try:
-                self.kafka_producer.produce(topic="redditsubmission", value=message)
+                self.kafka_producer.produce(topic=self.kafka_topic, value=message)
                 self.kafka_producer.flush()
                 logging.info(f"Sent : {submission_data['id']}")
             except Exception as e:
