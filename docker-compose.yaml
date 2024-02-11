@@ -85,6 +85,11 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./data/spark-data:/bitnami/spark
 
@@ -100,7 +105,12 @@ services:
     ports:
       - "27018:27017"
     restart: unless-stopped
-
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     volumes:
       - reddit_data:/data/db
       - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
@@ -112,6 +122,19 @@ services:
     container_name: reddit_producer
     depends_on:
       broker:
+        condition: service_healthy
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: reddit_consumer
+    depends_on:
+      broker:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      spark:
         condition: service_healthy
 
 volumes:
