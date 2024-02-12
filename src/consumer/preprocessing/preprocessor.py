@@ -1,6 +1,6 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, concat, from_unixtime, udf
-from pyspark.sql.types import StringType
+from pyspark.sql.types import FloatType, StringType
 
 from src.common.emotion_analysis import EmotionAnalyzer
 from src.common.sentiment_analysis import SentimentAnalyzer
@@ -29,12 +29,20 @@ class Preprocessor:
         cleaned_df = df.withColumn("cleaned_content", clean_text_udf(col("content")))
         return cleaned_df
 
-    def _generate_sentiment(self, df: DataFrame) -> DataFrame:
+    def _generate_sentiment_score(self, df: DataFrame) -> DataFrame:
         sentiment_analyzer_udf = udf(
-            self.sentiment_analyzer.get_sentiment, StringType()
+            self.sentiment_analyzer.get_sentiment_score, FloatType()
         )
         return df.withColumn(
-            "sentiment", sentiment_analyzer_udf(col("cleaned_content"))
+            "sentiment_score", sentiment_analyzer_udf(col("cleaned_content"))
+        )
+
+    def _generate_sentiment_label(self, df: DataFrame) -> DataFrame:
+        sentiment_analyzer_udf = udf(
+            self.sentiment_analyzer.get_sentiment_label, StringType()
+        )
+        return df.withColumn(
+            "sentiment", sentiment_analyzer_udf(col("sentiment_score"))
         )
 
     def _generate_emotion(self, df: DataFrame) -> DataFrame:
@@ -45,7 +53,8 @@ class Preprocessor:
         df = self._convert_date_format(df)
         df = self._create_content(df)
         df = self._clean_text(df)
-        df = self._generate_sentiment(df)
+        df = self._generate_sentiment_score(df)
+        df = self._generate_sentiment_label(df)
         df = self._generate_emotion(df)
         df = df.drop("content")
         return df

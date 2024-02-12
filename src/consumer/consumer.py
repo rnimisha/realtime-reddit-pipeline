@@ -38,6 +38,7 @@ class RedditConsumer:
                 StructField("body", StringType(), True),
                 StructField("upvotes", IntegerType(), True),
                 StructField("upvote_ratio", FloatType(), True),
+                StructField("url", StringType(), True),
                 StructField("created_at", DoubleType(), True),
             ]
         )

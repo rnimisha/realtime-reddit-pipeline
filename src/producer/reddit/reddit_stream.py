@@ -37,8 +37,8 @@ class RedditStream:
     def stream_submission(self):
         subreddit = self.reddit_instance.subreddit(self.subreddit)
 
-        # for submission in subreddit.hot(limit=None):
-        for submission in subreddit.stream.submissions():
+        for submission in subreddit.new(limit=None):
+            # for submission in subreddit.stream.submissions():
             print(vars(submission))
             submission_data = {
                 "id": submission.id,
@@ -46,6 +46,7 @@ class RedditStream:
                 "body": submission.selftext,
                 "upvotes": submission.ups,
                 "upvote_ratio": submission.upvote_ratio,
+                "url": submission.url,
                 "created_at": submission.created_utc,
             }
             message = json.dumps(submission_data).encode("utf8")
