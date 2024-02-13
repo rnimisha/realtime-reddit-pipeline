@@ -4,7 +4,9 @@ import streamlit as st
 
 from src.config.settings import settings
 from src.visualization.charts.metrics_card import get_metrics_card
+from src.visualization.charts.sentiment_pie_chart import get_sentiment_pie_chart
 from src.visualization.charts.sentiment_radar_chart import get_sentiment_radar_chart
+from src.visualization.charts.sentiment_stacked import get_sentiment_stacked
 from src.visualization.charts.upvote_sentiment_ratio import get_upvote_sentiment_ratio
 from src.visualization.db.connect import init_connect
 
@@ -31,10 +33,12 @@ st.set_page_config(
 )
 st.title(":bar_chart: Samsung Dashboard")
 
-# data
-data = collection.find()
-df = pd.DataFrame(list(data))
-df["created_at"] = pd.to_datetime(df["created_at"])
+
+def fetch_new_data():
+    data = collection.find()
+    df = pd.DataFrame(list(data))
+    df["created_at"] = pd.to_datetime(df["created_at"])
+    return df
 
 
 # dashboard
@@ -55,5 +59,19 @@ def create_dashboard(df: pd.DataFrame):
         sentiment_radar_chart = get_sentiment_radar_chart(df)
         st.plotly_chart(sentiment_radar_chart, use_container_width=True)
 
+    # thrid row
+    col1, col2 = st.columns([1, 2])
 
+    with col1:
+        sentiment_pie_chart = get_sentiment_pie_chart(
+            df, custom_theme, color_discrete_sequence
+        )
+        st.plotly_chart(sentiment_pie_chart, use_container_width=True)
+
+    with col2:
+        sentiment_stacked = get_sentiment_stacked(df, color_discrete_sequence)
+        st.plotly_chart(sentiment_stacked, use_container_width=True)
+
+
+df = fetch_new_data()
 create_dashboard(df)
