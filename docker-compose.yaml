@@ -137,5 +137,16 @@ services:
       spark:
         condition: service_healthy
 
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.visualization
+    container_name: reddit_dashboard
+    ports:
+      - "8501:8501"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
 volumes:
   reddit_data:
