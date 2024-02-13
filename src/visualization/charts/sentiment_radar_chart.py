@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from pandas import DataFrame
 
 
-def sentiment_radar_chart(data: DataFrame):
+def get_sentiment_radar_chart(data: DataFrame):
     sentiments = data["sentiment"].unique()
 
     counts = []
