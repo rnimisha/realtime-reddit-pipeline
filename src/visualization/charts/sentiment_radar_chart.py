@@ -15,7 +15,7 @@ def get_sentiment_radar_chart(data: DataFrame):
             r=counts,
             theta=sentiments,
             fill="toself",
-            line=dict(color="yellow", width=2, shape="linear"),
+            line=dict(color="#FFE579", width=2, shape="linear"),
         )
     )
 
@@ -26,7 +26,7 @@ def get_sentiment_radar_chart(data: DataFrame):
         ),
         showlegend=False,
         title=dict(
-            text="Sentiment Radar Chart",
+            text="Sentiment Analysis Across Categories",
             font=dict(size=18, color="white"),
         ),
     )

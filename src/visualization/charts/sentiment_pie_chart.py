@@ -6,8 +6,9 @@ def get_sentiment_pie_chart(df: DataFrame, custom_theme: str, color_discrete_seq
     fig = px.pie(
         df,
         names="emotion",
-        title="Emotion Distribution Pie Chart",
+        title="Emotion Distribution",
         template=custom_theme,
         color_discrete_sequence=color_discrete_sequence,
     )
+
     return fig

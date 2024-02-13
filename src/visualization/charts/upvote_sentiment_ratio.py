@@ -10,9 +10,19 @@ def get_upvote_sentiment_ratio(
         x="upvote_ratio",
         y="sentiment",
         color="sentiment",
-        title="Upvote Ratio vs. Sentiment",
+        title="Upvote Ratio & Sentiment",
         labels={"upvote_ratio": "Upvote Ratio", "sentiment": "Sentiment"},
         template=custom_theme,
         color_discrete_sequence=color_discrete_sequence,
+    )
+    scatter_fig.update_layout(
+        legend_title_text="",
+        legend=dict(
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            orientation="h",
+        ),
     )
     return scatter_fig
